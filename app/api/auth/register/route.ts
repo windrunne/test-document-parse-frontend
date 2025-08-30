@@ -1,17 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { smartApiClient } from '../../utils/api-client'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    
-    const response = await smartApiClient.fetch('/api/v1/auth/register', {
+
+    const response = await fetch(`${process.env.BACKEND_API_URL}/api/v1/auth/register`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(body),
-    })
+    });
 
     if (!response.ok) {
       const errorData = await response.json()
