@@ -92,13 +92,7 @@ export function DocumentsTab() {
     () => getDocuments({ status_filter: filters.status }),
     {
       keepPreviousData: true,
-      retry: false,
-      onError: (error) => {
-        console.error('❌ Documents query error:', error)
-      },
-      onSuccess: (data) => {
-        console.log('✅ Documents query success:', data)
-      }
+      retry: false
     }
   )
 
@@ -206,7 +200,6 @@ export function DocumentsTab() {
   }
 
   if (error) {
-    console.error('❌ Documents error object:', error)
     const errorMessage = typeof error === 'string' ? error : 
       (error as any)?.message || (error as any)?.detail || 'Error loading documents. Please try again.'
     return (

@@ -82,13 +82,7 @@ export function OrdersTab() {
     () => getOrders(filters),
     {
       keepPreviousData: true,
-      retry: false,
-      onError: (error) => {
-        console.error('Orders query error:', error)
-      },
-      onSuccess: (data) => {
-        console.log('Orders query success:', data)
-      }
+      retry: false
     }
   )
 
@@ -142,7 +136,6 @@ export function OrdersTab() {
   }
 
   if (error) {
-    console.error('❌ Orders error object:', error)
     const errorMessage = typeof error === 'string' ? error : 
       (error as any)?.message || (error as any)?.detail || 'Error loading orders. Please try again.'
     return (

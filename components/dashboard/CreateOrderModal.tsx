@@ -51,7 +51,6 @@ export function CreateOrderModal({ isOpen, onClose, onSuccess }: CreateOrderModa
       onSuccess()
     },
     onError: (error: any) => {
-      console.error('❌ Create order error details:', error.data)
       
       let errorMessage = 'Failed to create order'
       
@@ -80,9 +79,6 @@ export function CreateOrderModal({ isOpen, onClose, onSuccess }: CreateOrderModa
       unit_price: formData.unit_price,
       total_amount: formData.quantity * formData.unit_price
     }
-    
-    console.log('📝 Submitting order data:', orderData)
-    console.log('📝 Form data before submission:', formData)
     
     createMutation.mutate(orderData)
   }
