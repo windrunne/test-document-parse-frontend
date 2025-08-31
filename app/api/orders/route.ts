@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
         { status: 401 }
       )
     }
-
+    console.log("AAA", authHeader)
     const response = await fetch(`${API_BASE_URL}/api/v1/orders?${searchParams.toString()}`, {
       method: 'GET',
       headers: {

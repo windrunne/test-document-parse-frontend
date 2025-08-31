@@ -19,13 +19,11 @@ class ApiClient {
     this.client.interceptors.request.use(
       (config) => {
         const token = localStorage.getItem('access_token')
-        console.log('🔐 Request interceptor - Token found:', !!token, 'URL:', config.url)
+        
         if (token) {
           config.headers.Authorization = `Bearer ${token}`
-          console.log('✅ Authorization header set')
-        } else {
-          console.log('❌ No token found in localStorage')
-        }
+        } 
+
         return config
       },
       (error) => {
@@ -60,8 +58,6 @@ class ApiClient {
               message: errorMessage,
               details: errorDetails
             }
-            
-            console.log('📋 Structured error details:', errorDetails)
           } catch (parseError) {
             console.error('Error parsing structured error:', parseError)
           }
@@ -101,10 +97,10 @@ class ApiClient {
   async getOrders(params?: { skip?: number; limit?: number; status_filter?: string; patient_name?: string }) {
     try {
       const response = await this.client.get('/api/orders', { params })
-      console.log('📡 Orders API response:', response.data)
+      
       return response.data
     } catch (error) {
-      console.error('❌ Orders API error:', error)
+      console.error('Orders API error:', error)
       throw error
     }
   }
@@ -116,12 +112,10 @@ class ApiClient {
 
   async createOrder(orderData: any) {
     try {
-      console.log('📤 Creating order with data:', orderData)
       const response = await this.client.post('/api/orders', orderData)
-      console.log('✅ Order created successfully:', response.data)
       return response.data
     } catch (error) {
-      console.error('❌ Order creation failed:', error)
+      console.error('Order creation failed:', error)
       throw error
     }
   }
