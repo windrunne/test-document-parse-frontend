@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/v1/documents?${searchParams.toString()}`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/documents/?${searchParams.toString()}`, {
       method: 'GET',
       headers: {
         'Authorization': authHeader,
