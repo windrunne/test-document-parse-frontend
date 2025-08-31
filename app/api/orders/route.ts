@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
       )
     }
     console.log("AAA", authHeader)
-    const response = await fetch(`${API_BASE_URL}/api/v1/orders?${searchParams.toString()}`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/orders/?${searchParams.toString()}`, {
       method: 'GET',
       headers: {
         'Authorization': authHeader,
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/v1/orders`, {
+    const response = await fetch(`${API_BASE_URL}/api/v1/orders/`, {
       method: 'POST',
       headers: {
         'Authorization': authHeader,
