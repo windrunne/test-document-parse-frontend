@@ -84,10 +84,10 @@ export function OrdersTab() {
       keepPreviousData: true,
       retry: false,
       onError: (error) => {
-        console.error('❌ Orders query error:', error)
+        console.error('Orders query error:', error)
       },
       onSuccess: (data) => {
-        console.log('✅ Orders query success:', data)
+        console.log('Orders query success:', data)
       }
     }
   )
