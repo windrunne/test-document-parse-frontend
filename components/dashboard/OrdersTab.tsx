@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
-import { ordersApi } from '@/lib/api'
 import { PlusIcon, EditIcon, TrashIcon, EyeIcon } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import toast from 'react-hot-toast'
@@ -25,6 +24,45 @@ interface Order {
   created_at: string
 }
 
+// API functions using fetch
+const getOrders = async (params?: { skip?: number; limit?: number; status_filter?: string; patient_name?: string }) => {
+  const token = localStorage.getItem('access_token')
+  const queryParams = new URLSearchParams()
+  
+  if (params?.skip) queryParams.append('skip', params.skip.toString())
+  if (params?.limit) queryParams.append('limit', params.limit.toString())
+  if (params?.status_filter) queryParams.append('status_filter', params.status_filter)
+  if (params?.patient_name) queryParams.append('patient_name', params.patient_name)
+  
+  const response = await fetch(`/api/orders?${queryParams.toString()}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch orders')
+  }
+  
+  return response.json()
+}
+
+const deleteOrder = async (orderId: number) => {
+  const token = localStorage.getItem('access_token')
+  const response = await fetch(`/api/orders/${orderId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+  
+  if (!response.ok) {
+    throw new Error('Failed to delete order')
+  }
+  
+  return response.json()
+}
+
 export function OrdersTab() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
@@ -39,7 +77,7 @@ export function OrdersTab() {
 
   const { data: ordersData, isLoading, error } = useQuery(
     ['orders', filters],
-    () => ordersApi.getOrders(filters),
+    () => getOrders(filters),
     {
       keepPreviousData: true,
       retry: false,
@@ -52,13 +90,13 @@ export function OrdersTab() {
     }
   )
 
-  const deleteMutation = useMutation(ordersApi.deleteOrder, {
+  const deleteMutation = useMutation(deleteOrder, {
     onSuccess: () => {
       queryClient.invalidateQueries(['orders'])
       toast.success('Order deleted successfully')
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.detail || 'Failed to delete order')
+      toast.error(error.message || 'Failed to delete order')
     },
   })
 

@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useMutation } from 'react-query'
-import { ordersApi } from '@/lib/api'
 import { XIcon } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import toast from 'react-hot-toast'
@@ -11,6 +10,26 @@ interface CreateOrderModalProps {
   isOpen: boolean
   onClose: () => void
   onSuccess: () => void
+}
+
+// API function using fetch
+const createOrder = async (orderData: any) => {
+  const token = localStorage.getItem('access_token')
+  const response = await fetch('/api/orders', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(orderData),
+  })
+  
+  if (!response.ok) {
+    const errorData = await response.json()
+    throw { response, data: errorData }
+  }
+  
+  return response.json()
 }
 
 export function CreateOrderModal({ isOpen, onClose, onSuccess }: CreateOrderModalProps) {
@@ -25,20 +44,18 @@ export function CreateOrderModal({ isOpen, onClose, onSuccess }: CreateOrderModa
     status: 'pending'
   })
 
-  const createMutation = useMutation(ordersApi.createOrder, {
+  const createMutation = useMutation(createOrder, {
     onSuccess: () => {
       toast.success('Order created successfully!')
       onSuccess()
     },
     onError: (error: any) => {
-      console.error('❌ Create order error details:', error.response?.data)
+      console.error('❌ Create order error details:', error.data)
       
       let errorMessage = 'Failed to create order'
       
-      if (error.structuredError?.message) {
-        errorMessage = error.structuredError.message
-      } else if (error.response?.status === 422) {
-        const validationErrors = error.response?.data?.detail
+      if (error.response?.status === 422) {
+        const validationErrors = error.data?.detail
         if (Array.isArray(validationErrors) && validationErrors.length > 0) {
           errorMessage = validationErrors.map((err: any) => 
             `${err.loc?.join('.') || 'field'}: ${err.msg}`
@@ -46,8 +63,8 @@ export function CreateOrderModal({ isOpen, onClose, onSuccess }: CreateOrderModa
         } else if (typeof validationErrors === 'string') {
           errorMessage = validationErrors
         }
-      } else if (error.response?.data?.detail) {
-        errorMessage = error.response.data.detail
+      } else if (error.data?.detail) {
+        errorMessage = error.data.detail
       }
       
       toast.error(errorMessage)
@@ -241,7 +258,7 @@ export function CreateOrderModal({ isOpen, onClose, onSuccess }: CreateOrderModa
             <button
               type="submit"
               disabled={createMutation.isLoading}
-              className="btn-primary"
+              className="btn-primary flex gap-2"
             >
               {createMutation.isLoading ? (
                 <LoadingSpinner size="sm" className="mr-2" />

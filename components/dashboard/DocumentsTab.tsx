@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
-import { documentsApi } from '@/lib/api'
 import { File, Trash2, RefreshCw, Eye } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import toast from 'react-hot-toast'
@@ -19,6 +18,62 @@ interface Document {
   created_at: string
 }
 
+// API functions using fetch
+const getDocuments = async (params?: { skip?: number; limit?: number; status_filter?: string }) => {
+  const token = localStorage.getItem('access_token')
+  const queryParams = new URLSearchParams()
+  
+  if (params?.skip) queryParams.append('skip', params.skip.toString())
+  if (params?.limit) queryParams.append('limit', params.limit.toString())
+  if (params?.status_filter) queryParams.append('status_filter', params.status_filter)
+  
+  const response = await fetch(`/api/documents?${queryParams.toString()}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch documents')
+  }
+  
+  return response.json()
+}
+
+const deleteDocument = async (documentId: number) => {
+  const token = localStorage.getItem('access_token')
+  const response = await fetch(`/api/documents/${documentId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+  
+  if (!response.ok) {
+    const errorData = await response.json()
+    throw { response, data: errorData }
+  }
+  
+  return response.json()
+}
+
+const extractDocumentData = async (documentId: number) => {
+  const token = localStorage.getItem('access_token')
+  const response = await fetch(`/api/documents/${documentId}/extract`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+  
+  if (!response.ok) {
+    const errorData = await response.json()
+    throw { response, data: errorData }
+  }
+  
+  return response.json()
+}
+
 export function DocumentsTab() {
   const [filters, setFilters] = useState({
     status: '',
@@ -31,7 +86,7 @@ export function DocumentsTab() {
 
   const { data: documentsData, isLoading, error } = useQuery(
     ['documents', filters],
-    () => documentsApi.getDocuments({ status_filter: filters.status }),
+    () => getDocuments({ status_filter: filters.status }),
     {
       keepPreviousData: true,
       retry: false,
@@ -46,51 +101,46 @@ export function DocumentsTab() {
 
   const documents = documentsData?.items || []
 
-  const deleteMutation = useMutation(documentsApi.deleteDocument, {
+  const deleteMutation = useMutation(deleteDocument, {
     onSuccess: () => {
       queryClient.invalidateQueries(['documents'])
       toast.success('Document deleted successfully')
     },
     onError: (error: any) => {
-      const errorMessage = error.structuredError?.message || 
-                          error.response?.data?.detail || 
-                          'Failed to delete document'
+      const errorMessage = error.data?.detail || 'Failed to delete document'
       toast.error(errorMessage)
     },
   })
 
-  const extractMutation = useMutation(documentsApi.extractDocumentData, {
+  const extractMutation = useMutation(extractDocumentData, {
     onSuccess: () => {
       queryClient.invalidateQueries(['documents'])
       toast.success('Data extraction completed')
     },
-                    onError: (error: any) => {
-                  const errorMessage = error.structuredError?.message || 
-                                      error.response?.data?.detail || 
-                                      'Failed to extract data'
-                  
-                  const errorData = error.response?.data
-                  const errorType = errorData?.error_type
-                  
-                  console.error('Document extraction error:', {
-                    message: errorMessage,
-                    type: errorType,
-                    status: error.response?.status,
-                    fullError: error,
-                    structuredError: error.structuredError
-                  })
-                  
-                  if (errorType === 'connection_lost') {
-                    toast.error('Connection lost during processing. Check if the document was processed successfully.')
-                    queryClient.invalidateQueries(['documents'])
-                  } else if (errorType === 'network_error') {
-                    toast.error('Network error. Please check your connection and try again.')
-                  } else if (errorMessage.includes('timeout') || errorMessage.includes('too long')) {
-                    toast.error('Document processing is taking too long. Please try again in a few minutes.')
-                  } else {
-                    toast.error(errorMessage)
-                  }
-                },
+    onError: (error: any) => {
+      const errorMessage = error.data?.detail || 'Failed to extract data'
+      
+      const errorData = error.data
+      const errorType = errorData?.error_type
+      
+      console.error('Document extraction error:', {
+        message: errorMessage,
+        type: errorType,
+        status: error.response?.status,
+        fullError: error
+      })
+      
+      if (errorType === 'connection_lost') {
+        toast.error('Connection lost during processing. Check if the document was processed successfully.')
+        queryClient.invalidateQueries(['documents'])
+      } else if (errorType === 'network_error') {
+        toast.error('Network error. Please check your connection and try again.')
+      } else if (errorMessage.includes('timeout') || errorMessage.includes('too long')) {
+        toast.error('Document processing is taking too long. Please try again in a few minutes.')
+      } else {
+        toast.error(errorMessage)
+      }
+    },
   })
 
   useEffect(() => {

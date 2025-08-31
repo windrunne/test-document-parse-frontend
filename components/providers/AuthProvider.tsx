@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User } from '@/types/user'
 import { extractErrorMessage, extractErrorDetails } from '@/utils/error-handler'
-import { apiClient } from '@/lib/api'
 
 interface AuthContextType {
   user: User | null
@@ -29,12 +28,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (!token) {
         setUser(null)
-        apiClient.setToken(null)
         setLoading(false)
         return
       }
-
-      apiClient.setToken(token)
       
       const response = await fetch('/api/auth/me', {
         headers: {
@@ -47,13 +43,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(data)
       } else {
         localStorage.removeItem('access_token')
-        apiClient.setToken(null)
         setUser(null)
       }
     } catch (error) {
       console.error('Failed to fetch current user:', error)
       localStorage.removeItem('access_token')
-      apiClient.setToken(null)
       setUser(null)
     } finally {
       setLoading(false)
@@ -83,8 +77,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (data.access_token) {
         localStorage.setItem('access_token', data.access_token)
-        
-        apiClient.setToken(data.access_token)
       }
       
       await fetchCurrentUser()
@@ -97,12 +89,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       localStorage.removeItem('access_token')
-      apiClient.setToken(null)
       setUser(null)
     } catch (error) {
       console.error('Logout error:', error)
       localStorage.removeItem('access_token')
-      apiClient.setToken(null)
       setUser(null)
     }
   }

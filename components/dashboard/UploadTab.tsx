@@ -3,7 +3,6 @@
 import { useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { useMutation, useQueryClient } from 'react-query'
-import { documentsApi } from '@/lib/api'
 import { UploadIcon, FileIcon, CheckIcon, XIcon, AlertCircleIcon } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import toast from 'react-hot-toast'
@@ -17,11 +16,50 @@ interface UploadedFile {
   error?: string
 }
 
+// API functions using fetch
+const uploadDocument = async (file: File) => {
+  const token = localStorage.getItem('access_token')
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const response = await fetch('/api/documents', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    body: formData,
+  })
+  
+  if (!response.ok) {
+    const errorData = await response.json()
+    throw { response, data: errorData }
+  }
+  
+  return response.json()
+}
+
+const extractDocumentData = async (documentId: number) => {
+  const token = localStorage.getItem('access_token')
+  const response = await fetch(`/api/documents/${documentId}/extract`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  })
+  
+  if (!response.ok) {
+    const errorData = await response.json()
+    throw { response, data: errorData }
+  }
+  
+  return response.json()
+}
+
 export function UploadTab() {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([])
   const queryClient = useQueryClient()
 
-  const uploadMutation = useMutation(documentsApi.uploadDocument, {
+  const uploadMutation = useMutation(uploadDocument, {
     onSuccess: (data, file) => {
       setUploadedFiles(prev => 
         prev.map(f => 
@@ -37,7 +75,7 @@ export function UploadTab() {
       setUploadedFiles(prev => 
         prev.map(f => 
           f.file === file 
-            ? { ...f, status: 'error', error: error.response?.data?.detail || 'Upload failed' }
+            ? { ...f, status: 'error', error: error.data?.detail || 'Upload failed' }
             : f
         )
       )
@@ -45,7 +83,7 @@ export function UploadTab() {
     },
   })
 
-  const extractMutation = useMutation(documentsApi.extractDocumentData, {
+  const extractMutation = useMutation(extractDocumentData, {
     onSuccess: (data, documentId) => {
       setUploadedFiles(prev => 
         prev.map(f => 
@@ -61,7 +99,7 @@ export function UploadTab() {
       setUploadedFiles(prev => 
         prev.map(f => 
           f.result?.id === documentId 
-            ? { ...f, status: 'error', error: error.response?.data?.detail || 'Extraction failed' }
+            ? { ...f, status: 'error', error: error.data?.detail || 'Extraction failed' }
             : f
         )
       )

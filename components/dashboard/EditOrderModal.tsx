@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useMutation, useQueryClient } from 'react-query'
-import { ordersApi } from '@/lib/api'
 import { XIcon } from 'lucide-react'
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner'
 import toast from 'react-hot-toast'
@@ -24,6 +23,26 @@ interface EditOrderModalProps {
   onClose: () => void
   order: Order
   onSuccess: () => void
+}
+
+// API function using fetch
+const updateOrder = async (orderId: number, orderData: any) => {
+  const token = localStorage.getItem('access_token')
+  const response = await fetch(`/api/orders/${orderId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify(orderData),
+  })
+  
+  if (!response.ok) {
+    const errorData = await response.json()
+    throw { response, data: errorData }
+  }
+  
+  return response.json()
 }
 
 export function EditOrderModal({ isOpen, onClose, order, onSuccess }: EditOrderModalProps) {
@@ -54,14 +73,14 @@ export function EditOrderModal({ isOpen, onClose, order, onSuccess }: EditOrderM
   }, [order])
 
   const updateMutation = useMutation(
-    (data: any) => ordersApi.updateOrder(order.id, data),
+    (data: any) => updateOrder(order.id, data),
     {
       onSuccess: () => {
         toast.success('Order updated successfully!')
         onSuccess()
       },
       onError: (error: any) => {
-        toast.error(error.response?.data?.detail || 'Failed to update order')
+        toast.error(error.data?.detail || 'Failed to update order')
       },
     }
   )
@@ -249,7 +268,7 @@ export function EditOrderModal({ isOpen, onClose, order, onSuccess }: EditOrderM
             <button
               type="submit"
               disabled={updateMutation.isLoading}
-              className="btn-primary"
+              className="btn-primary flex gap-2 items-center"
             >
               {updateMutation.isLoading ? (
                 <LoadingSpinner size="sm" className="mr-2" />
