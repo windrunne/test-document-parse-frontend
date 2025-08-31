@@ -28,6 +28,7 @@ const uploadDocument = async (file: File) => {
       'Authorization': `Bearer ${token}`,
     },
     body: formData,
+    credentials: "include",
   })
   
   if (!response.ok) {
@@ -45,6 +46,7 @@ const extractDocumentData = async (documentId: number) => {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
+    credentials: "include",
   })
   
   if (!response.ok) {

@@ -38,6 +38,7 @@ const getOrders = async (params?: { skip?: number; limit?: number; status_filter
     headers: {
       'Authorization': `Bearer ${token}`,
     },
+    credentials: "include",
   })
   
   if (!response.ok) {
@@ -54,6 +55,7 @@ const deleteOrder = async (orderId: number) => {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
+    credentials: "include",
   })
   
   if (!response.ok) {

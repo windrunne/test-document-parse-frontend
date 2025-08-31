@@ -21,6 +21,7 @@ const createOrder = async (orderData: any) => {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
     },
+    credentials: "include",
     body: JSON.stringify(orderData),
   })
   
@@ -258,7 +259,7 @@ export function CreateOrderModal({ isOpen, onClose, onSuccess }: CreateOrderModa
             <button
               type="submit"
               disabled={createMutation.isLoading}
-              className="btn-primary flex gap-2"
+              className="btn-primary flex gap-2 items-center"
             >
               {createMutation.isLoading ? (
                 <LoadingSpinner size="sm" className="mr-2" />

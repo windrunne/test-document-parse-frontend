@@ -22,6 +22,7 @@ export async function POST(
         'Authorization': authHeader,
         'Content-Type': 'application/json',
       },
+      credentials: "include",
       signal: AbortSignal.timeout(900000),
     })
 

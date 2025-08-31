@@ -31,6 +31,7 @@ const getDocuments = async (params?: { skip?: number; limit?: number; status_fil
     headers: {
       'Authorization': `Bearer ${token}`,
     },
+    credentials: "include",
   })
   
   if (!response.ok) {
@@ -47,6 +48,7 @@ const deleteDocument = async (documentId: number) => {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
+    credentials: "include",
   })
   
   if (!response.ok) {
@@ -64,6 +66,7 @@ const extractDocumentData = async (documentId: number) => {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
+    credentials: "include",
   })
   
   if (!response.ok) {

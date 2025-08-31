@@ -21,6 +21,7 @@ export async function GET(
       headers: {
         'Authorization': authHeader,
       },
+      credentials: "include",
     })
 
     if (!response.ok) {
@@ -61,6 +62,7 @@ export async function DELETE(
       headers: {
         'Authorization': authHeader,
       },
+      credentials: "include",
     })
 
     if (!response.ok) {

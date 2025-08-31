@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
       headers: {
         'Authorization': authHeader,
       },
+      credentials: "include"
     })
 
     if (!response.ok) {
@@ -59,6 +60,7 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
+      credentials: "include",
     })
 
     if (!response.ok) {

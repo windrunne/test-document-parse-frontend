@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
       headers: {
         'Authorization': authHeader,
       },
+      credentials: "include",
     })
 
     if (!response.ok) {
@@ -75,6 +76,7 @@ export async function POST(request: NextRequest) {
       headers: {
         'Authorization': authHeader,
       },
+      credentials: "include",
       body: formData,
     })
 

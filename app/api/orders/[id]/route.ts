@@ -32,6 +32,7 @@ export async function GET(
       headers: {
         'Authorization': authHeader,
       },
+      credentials: "include",
     })
 
     if (!response.ok) {
@@ -80,6 +81,7 @@ export async function PUT(
         'Authorization': authHeader,
         'Content-Type': 'application/json',
       },
+      credentials: "include",
       body: JSON.stringify(body),
     })
 
@@ -127,6 +129,7 @@ export async function DELETE(
       headers: {
         'Authorization': authHeader,
       },
+      credentials: "include",
     })
 
     if (!response.ok) {
