@@ -311,7 +311,7 @@ export function UploadTab() {
                     <button
                       onClick={() => handleExtractData(fileInfo)}
                       disabled={extractMutation.isLoading}
-                      className="btn-primary text-sm"
+                      className="btn-primary text-sm flex items-center gap-2"
                     >
                       {extractMutation.isLoading ? (
                         <LoadingSpinner size="sm" className="mr-2" />

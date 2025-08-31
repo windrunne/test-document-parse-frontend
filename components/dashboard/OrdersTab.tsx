@@ -25,13 +25,13 @@ interface Order {
 }
 
 // API functions using fetch
-const getOrders = async (params?: { skip?: number; limit?: number; status_filter?: string; patient_name?: string }) => {
+const getOrders = async (params?: { skip?: number; limit?: number; status?: string; patient_name?: string }) => {
   const token = localStorage.getItem('access_token')
   const queryParams = new URLSearchParams()
   
   if (params?.skip) queryParams.append('skip', params.skip.toString())
   if (params?.limit) queryParams.append('limit', params.limit.toString())
-  if (params?.status_filter) queryParams.append('status_filter', params.status_filter)
+  if (params?.status) queryParams.append('status_filter', params.status)
   if (params?.patient_name) queryParams.append('patient_name', params.patient_name)
   
   const response = await fetch(`/api/orders?${queryParams.toString()}`, {
