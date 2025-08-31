@@ -19,8 +19,12 @@ class ApiClient {
     this.client.interceptors.request.use(
       (config) => {
         const token = localStorage.getItem('access_token')
+        console.log('🔐 Request interceptor - Token found:', !!token, 'URL:', config.url)
         if (token) {
           config.headers.Authorization = `Bearer ${token}`
+          console.log('✅ Authorization header set')
+        } else {
+          console.log('❌ No token found in localStorage')
         }
         return config
       },
@@ -69,10 +73,11 @@ class ApiClient {
   }
 
   setToken(token: string | null) {
+    // Store token in localStorage so the interceptor can access it
     if (token) {
-      this.client.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      localStorage.setItem('access_token', token)
     } else {
-      delete this.client.defaults.headers.common['Authorization']
+      localStorage.removeItem('access_token')
     }
   }
 

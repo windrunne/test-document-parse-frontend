@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { User } from '@/types/user'
 import { extractErrorMessage, extractErrorDetails } from '@/utils/error-handler'
+import { apiClient } from '@/lib/api'
 
 interface AuthContextType {
   user: User | null
@@ -25,47 +26,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchCurrentUser = async () => {
     try {
       const token = localStorage.getItem('access_token')
-      console.log('🔍 Checking for token:', token ? 'Token found' : 'No token')
       
       if (!token) {
-        console.log('❌ No token found, setting user to null')
         setUser(null)
+        apiClient.setToken(null)
         setLoading(false)
         return
       }
 
-      console.log('🔐 Making request to /api/auth/me with token')
+      apiClient.setToken(token)
+      
       const response = await fetch('/api/auth/me', {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       })
       
-      console.log('📡 /api/auth/me response status:', response.status)
-      
       if (response.ok) {
         const data = await response.json()
-        console.log('✅ User data received:', data)
         setUser(data)
       } else {
-        console.log('❌ /api/auth/me failed, removing token')
         localStorage.removeItem('access_token')
+        apiClient.setToken(null)
         setUser(null)
       }
     } catch (error) {
-      console.error('❌ Failed to fetch current user:', error)
+      console.error('Failed to fetch current user:', error)
       localStorage.removeItem('access_token')
+      apiClient.setToken(null)
       setUser(null)
     } finally {
-      console.log('🏁 Setting loading to false')
       setLoading(false)
     }
   }
 
   const login = async (username: string, password: string) => {
     try {
-      console.log('🔐 Attempting login for:', username)
-      
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
@@ -76,28 +72,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (!response.ok) {
         const errorData = await response.json()
-        console.log('❌ Login error response:', errorData)
         
         const errorMessage = extractErrorMessage(response, errorData)
         const errorDetails = extractErrorDetails(response, errorData)
         
-        console.log('📋 Error details:', errorDetails)
         throw new Error(errorMessage)
       }
 
       const data = await response.json()
-      console.log('✅ Login response:', data)
       
       if (data.access_token) {
         localStorage.setItem('access_token', data.access_token)
-        console.log('💾 Token stored in localStorage')
+        
+        apiClient.setToken(data.access_token)
       }
       
-      console.log('👤 Fetching current user...')
       await fetchCurrentUser()
-      console.log('✅ User fetch completed')
     } catch (error) {
-      console.error('❌ Login error:', error)
+      console.error('Login error:', error)
       throw error
     }
   }
@@ -105,17 +97,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       localStorage.removeItem('access_token')
+      apiClient.setToken(null)
       setUser(null)
     } catch (error) {
       console.error('Logout error:', error)
       localStorage.removeItem('access_token')
+      apiClient.setToken(null)
       setUser(null)
     }
   }
 
   const register = async (email: string, username: string, password: string) => {
     try {
-      console.log('📝 Attempting registration for:', username, email)
       
       const response = await fetch('/api/auth/register', {
         method: 'POST',
@@ -127,18 +120,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (!response.ok) {
         const errorData = await response.json()
-        console.log('❌ Registration error response:', errorData)
         
         const errorMessage = extractErrorMessage(response, errorData)
         const errorDetails = extractErrorDetails(response, errorData)
         
-        console.log('📋 Error details:', errorDetails)
         throw new Error(errorMessage)
       }
       
-      console.log('✅ Registration successful')
     } catch (error) {
-      console.error('❌ Registration error:', error)
+      console.error('Registration error:', error)
       throw error
     }
   }
